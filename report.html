@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coconut Qwen3-0.6B GSM8K Reproduction</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --ink: #172033;
+      --muted: #5b6577;
+      --line: #d9deea;
+      --panel: #ffffff;
+      --accent: #2c6bed;
+      --accent-2: #1b9a74;
+      --warn: #a35d00;
+      --code: #111827;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      line-height: 1.58;
+    }
+
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 42px 22px 72px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 24px;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 36px 0 14px;
+      font-size: 24px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 24px 0 10px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    p { margin: 10px 0; }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 780px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    section {
+      margin: 28px 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+      margin: 16px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .metric b {
+      display: block;
+      font-size: 26px;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #eef2f8;
+      font-weight: 650;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    code {
+      font-family: "Cascadia Mono", "Consolas", monospace;
+      background: #edf1f7;
+      border: 1px solid #d8deeb;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-size: 0.92em;
+    }
+
+    pre {
+      margin: 12px 0;
+      padding: 14px;
+      overflow-x: auto;
+      color: #e6edf6;
+      background: var(--code);
+      border-radius: 8px;
+      font-family: "Cascadia Mono", "Consolas", monospace;
+      font-size: 13px;
+    }
+
+    .diagram {
+      display: grid;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .tokens {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .token {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 6px;
+      padding: 7px 9px;
+      font-family: "Cascadia Mono", "Consolas", monospace;
+      font-size: 13px;
+    }
+
+    .token.latent {
+      border-color: #a8c2ff;
+      background: #eef4ff;
+      color: #184a9b;
+    }
+
+    .token.text {
+      border-color: #ace3d4;
+      background: #effbf7;
+      color: #11684f;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #eef4ff;
+      padding: 12px 14px;
+      border-radius: 6px;
+      margin: 14px 0;
+    }
+
+    .warning {
+      border-left-color: var(--warn);
+      background: #fff7ea;
+    }
+
+    .caption {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
+      .label { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Coconut Qwen3-0.6B GSM8K Reproduction</h1>
+    <p class="subtitle">
+      I reproduced the core Coconut hidden-state feedback mechanism on GSM8K
+      with Qwen3-0.6B, verified the required single-example overfit, and ran
+      small bonus ablations against a plain CoT baseline.
+    </p>
+    <div class="meta">
+      <span class="pill">Model: Qwen3-0.6B</span>
+      <span class="pill">Dataset: GSM8K</span>
+      <span class="pill">GPU: RTX 3070 Laptop 8GB</span>
+      <span class="pill">Framework: PyTorch + Transformers</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Summary</h2>
+    <div class="grid">
+      <div class="metric">
+        <b>0.000145</b>
+        <span>final stage-2 single-example loss</span>
+      </div>
+      <div class="metric">
+        <b>### 72</b>
+        <span>generated answer after two latent thoughts</span>
+      </div>
+      <div class="metric">
+        <b>9/32</b>
+        <span>best 32-example Coconut answer-only ablation</span>
+      </div>
+    </div>
+    <p>
+      The required target was successful: one GSM8K example overfit to near-zero
+      loss, and the model generated the correct answer from a prompt containing
+      only the question, <code>&lt;bot&gt;</code>, two latent positions, and
+      <code>&lt;eot&gt;</code>.
+    </p>
+    <p>
+      The bonus experiments were harder. A plain CoT baseline memorized a
+      32-example training subset, while Coconut variants remained much weaker
+      under full-parameter fp16 fine-tuning. I used these runs to diagnose the
+      optimization difficulty rather than overclaiming a positive accuracy
+      result.
+    </p>
+  </section>
+
+  <section>
+    <h2>Mechanism</h2>
+    <p>
+      Coconut replaces selected text reasoning steps with continuous thoughts.
+      At each <code>&lt;latent&gt;</code> position, I do not use the ordinary
+      token embedding. Instead, I run the prefix through the causal LM, take the
+      final-layer hidden state at the previous position, and use that vector as
+      the input embedding for the current latent position.
+    </p>
+    <div class="panel">
+      <div class="diagram">
+        <div class="row">
+          <div class="label">Stage 2 input</div>
+          <div class="tokens">
+            <span class="token">Question</span>
+            <span class="token latent">&lt;bot&gt;</span>
+            <span class="token latent">&lt;latent&gt;</span>
+            <span class="token latent">&lt;latent&gt;</span>
+            <span class="token latent">&lt;eot&gt;</span>
+            <span class="token text">### 72</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="label">Feedback</div>
+          <div class="tokens">
+            <span class="token">h_bot -> latent 1 input</span>
+            <span class="token">h_latent1 -> latent 2 input</span>
+            <span class="token">h_latent2 conditions answer</span>
+          </div>
+        </div>
+      </div>
+      <p class="caption">
+        The marker tokens define the latent region. The actual latent inputs are
+        hidden states, not the learned embedding of the literal
+        <code>&lt;latent&gt;</code> token.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Curriculum</h2>
+    <p>
+      I used a staged curriculum. The stage number controls how many leading
+      CoT steps are replaced by latent thoughts.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Stage</th>
+          <th>Training sequence</th>
+          <th>Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0</td>
+          <td><code>Question &lt;bot&gt;&lt;eot&gt; Step 1 Step 2 ### answer</code></td>
+          <td>Warm up on ordinary text reasoning with the marker structure present.</td>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td><code>Question &lt;bot&gt;&lt;latent&gt;&lt;eot&gt; Step 2 ### answer</code></td>
+          <td>Replace the first reasoning step with one continuous thought.</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><code>Question &lt;bot&gt;&lt;latent&gt;&lt;latent&gt;&lt;eot&gt; ### answer</code></td>
+          <td>Replace both text reasoning steps in the single-example run.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Implementation Details</h2>
+    <h3>Special Tokens</h3>
+    <p>
+      I added <code>&lt;bot&gt;</code>, <code>&lt;latent&gt;</code>, and
+      <code>&lt;eot&gt;</code> as tokenizer special tokens, resized the model
+      embeddings, and initialized the new embeddings from an existing stable
+      token.
+    </p>
+    <h3>Forward Pass</h3>
+    <p>
+      The wrapper first builds ordinary input embeddings. For each latent
+      position, it runs the current prefix, takes
+      <code>hidden_states[-1][:, -1:, :]</code>, and replaces the latent input
+      slot with that tensor. I keep the tensor attached to the computation graph
+      so gradients flow back through the feedback path.
+    </p>
+    <h3>Loss Masking</h3>
+    <p>
+      The question and latent region are ignored in the LM loss. Only the
+      remaining supervised text and final answer tokens receive labels. This is
+      important because latent positions have no discrete target token.
+    </p>
+  </section>
+
+  <section>
+    <h2>Required Experiment</h2>
+    <p>I ran:</p>
+    <pre>python scripts/overfit_one.py --model-name models/Qwen3-0.6B --output-dir outputs/overfit_one_default</pre>
+    <p>The final generated text was:</p>
+    <pre>Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether?
+&lt;bot&gt;&lt;latent&gt;&lt;latent&gt;&lt;eot&gt;### 72&lt;|im_end|&gt;</pre>
+    <p>
+      The final stage-2 loss was <strong>0.000145</strong>. This verifies the
+      bottom-line requirement: the model can overfit one GSM8K example with the
+      latent feedback loop active.
+    </p>
+
+    <svg viewBox="0 0 760 310" role="img" aria-label="Required overfit loss curve">
+      <rect x="0" y="0" width="760" height="310" fill="#ffffff"></rect>
+      <line x1="58" y1="260" x2="720" y2="260" stroke="#9aa6ba" stroke-width="1"></line>
+      <line x1="58" y1="30" x2="58" y2="260" stroke="#9aa6ba" stroke-width="1"></line>
+      <text x="58" y="286" fill="#5b6577" font-size="12">0</text>
+      <text x="706" y="286" fill="#5b6577" font-size="12">360 steps</text>
+      <text x="14" y="36" fill="#5b6577" font-size="12">7.5</text>
+      <text x="20" y="264" fill="#5b6577" font-size="12">0</text>
+      <polyline
+        fill="none"
+        stroke="#2c6bed"
+        stroke-width="3"
+        points="60,214 62,239 64,251 76,260 94,260 278,260 280,216 296,260 314,260 498,260 500,34 516,260 534,260 720,260" />
+      <circle cx="500" cy="34" r="4" fill="#a35d00"></circle>
+      <text x="512" y="38" fill="#a35d00" font-size="12">stage 2 reset</text>
+      <text x="58" y="18" fill="#172033" font-size="14">Single-example overfit loss, sampled points</text>
+    </svg>
+    <p class="caption">
+      The curve jumps when each curriculum stage starts, then rapidly falls
+      again. Stage 2 starts high at 7.375 and reaches 0.000145.
+    </p>
+  </section>
+
+  <section>
+    <h2>Bonus Experiments</h2>
+    <p>
+      I ran small-subset experiments to understand whether the same mechanism
+      scales beyond one example. The results were mixed.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Experiment</th>
+          <th>Evaluation</th>
+          <th>Result</th>
+          <th>What I learned</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2-example train-set sanity, Coconut</td>
+          <td>train split</td>
+          <td>2/2</td>
+          <td>The training and generation path works for more than one example.</td>
+        </tr>
+        <tr>
+          <td>2-example train-set sanity, plain CoT</td>
+          <td>train split</td>
+          <td>2/2</td>
+          <td>The baseline path is also functional.</td>
+        </tr>
+        <tr>
+          <td>32-example train-set, plain CoT</td>
+          <td>train split</td>
+          <td>32/32</td>
+          <td>Text CoT memorization is easy for the base model.</td>
+        </tr>
+        <tr>
+          <td>32-example Coconut, remaining-CoT target</td>
+          <td>train split</td>
+          <td>8/32</td>
+          <td>Later latent stages stayed high-loss and hard to optimize.</td>
+        </tr>
+        <tr>
+          <td>32-example Coconut, answer-only target</td>
+          <td>train split</td>
+          <td>9/32</td>
+          <td>Shorter targets helped slightly, but did not solve the bottleneck.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout warning">
+      I do not present the bonus runs as a successful full-GSM8K result. They
+      are ablations showing where my implementation works and where it becomes
+      difficult under the local compute constraints.
+    </div>
+  </section>
+
+  <section>
+    <h2>Issues and Fixes</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Issue</th>
+          <th>Diagnosis</th>
+          <th>Fix or experiment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Latent forward pass cannot be batched like a normal LM input.</td>
+          <td>Each latent input depends on the previous hidden state.</td>
+          <td>I recomputed prefixes sequentially for clarity and correctness.</td>
+        </tr>
+        <tr>
+          <td>Latent positions should not be supervised as text tokens.</td>
+          <td>They do not have discrete target tokens.</td>
+          <td>I masked prompt and latent positions with <code>-100</code>.</td>
+        </tr>
+        <tr>
+          <td>GSM8K annotations added noisy duplicated expressions.</td>
+          <td>Raw answers contain spans such as <code>&lt;&lt;48/2=24&gt;&gt;</code>.</td>
+          <td>I removed these annotation spans during preprocessing.</td>
+        </tr>
+        <tr>
+          <td>HuggingFace dataset loading sometimes tried online HEAD requests.</td>
+          <td>The dataset was cached locally but the loader still checked the Hub.</td>
+          <td>I added <code>--local-files-only</code> for cached runs.</td>
+        </tr>
+        <tr>
+          <td>Long fp16 full-parameter runs produced non-finite gradients.</td>
+          <td>Small-data repeated training was numerically unstable on 8GB GPU.</td>
+          <td>I added gradient clipping, Adam epsilon control, and non-finite guards.</td>
+        </tr>
+        <tr>
+          <td>Generated answers were sometimes undercounted by evaluation.</td>
+          <td>Some outputs contained repeated <code>### Final Answer</code> text.</td>
+          <td>I improved numeric extraction to search answer segments robustly.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Conclusion</h2>
+    <p>
+      The required Coconut mechanism is implemented and validated by a clean
+      single-example overfit. The bonus experiments showed that small-subset
+      multi-example Coconut training is much harder than plain CoT fine-tuning
+      in my local fp16 full-parameter setup. I found that the difficulty appears
+      in the latent stages themselves: their losses remained higher and more
+      volatile even after preprocessing and optimization fixes.
+    </p>
+    <p>
+      If I had more compute or time, my next step would be to move from
+      full-parameter fp16 training to a more stable setup: LoRA/adapters,
+      checkpointed mixed precision, a closer reproduction of the official
+      curriculum, and larger train subsets. For this submission, I focused on
+      correctness of the hidden-state feedback loop and on documenting the
+      optimization issues honestly.
+    </p>
+  </section>
+</main>
+</body>
+</html>
