@@ -384,6 +384,12 @@
       slot with that tensor. I keep the tensor attached to the computation graph
       so gradients flow back through the feedback path.
     </p>
+    <h3>Reference Implementation</h3>
+    <p>
+      I used the official <code>facebookresearch/coconut</code> repository as a
+      reference for the staged curriculum and latent feedback structure, then
+      adapted the mechanism to a small HuggingFace Qwen3 model.
+    </p>
     <h3>Loss Masking</h3>
     <p>
       The question and latent region are ignored in the LM loss. Only the
@@ -399,6 +405,10 @@
     <p>The final generated text was:</p>
     <pre>Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether?
 &lt;bot&gt;&lt;latent&gt;&lt;latent&gt;&lt;eot&gt;### 72&lt;|im_end|&gt;</pre>
+    <p>The GSM8K ground-truth solution for the same example is:</p>
+    <pre>Natalia sold 48 / 2 = 24 clips in May.
+Natalia sold 48 + 24 = 72 clips altogether.
+Final answer: ### 72</pre>
     <p>
       The final stage-2 loss was <strong>0.000145</strong>. This verifies the
       bottom-line requirement: the model can overfit one GSM8K example with the

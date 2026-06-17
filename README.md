@@ -60,6 +60,7 @@ Result:
 ```text
 stage 2 final loss: 0.000145
 generated: <bot><latent><latent><eot>### 72<|im_end|>
+ground truth final answer: ### 72
 ```
 
 This proves that the single-example Coconut feedback loop, special tokens,
